@@ -203,7 +203,7 @@ class EconomicDashboard:
         )
         
         # S&P 500
-        if not data['sp500'].empty:
+        if 'sp500' in data and not data['sp500'].empty:
             fig.add_trace(
                 go.Scatter(x=data['sp500'].index, y=data['sp500']['Close'], 
                           name="S&P 500", line=dict(color='green')),
@@ -211,7 +211,7 @@ class EconomicDashboard:
             )
         
         # Oil Prices
-        if not data['oil'].empty:
+        if 'oil' in data and not data['oil'].empty:
             fig.add_trace(
                 go.Scatter(x=data['oil'].index, y=data['oil']['Close'], 
                           name="Oil", line=dict(color='black')),
@@ -219,7 +219,7 @@ class EconomicDashboard:
             )
         
         # Inflation Rate
-        if not data['inflation'].empty:
+        if 'inflation' in data and not data['inflation'].empty:
             fig.add_trace(
                 go.Scatter(x=data['inflation'].index, y=data['inflation']['Inflation_Rate'], 
                           name="Inflation", line=dict(color='red')),
@@ -227,7 +227,7 @@ class EconomicDashboard:
             )
         
         # Unemployment Rate
-        if not data['unemployment'].empty:
+        if 'unemployment' in data and not data['unemployment'].empty:
             fig.add_trace(
                 go.Scatter(x=data['unemployment'].index, y=data['unemployment']['Unemployment_Rate'], 
                           name="Unemployment", line=dict(color='orange')),
