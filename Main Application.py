@@ -292,13 +292,18 @@ class EconomicDashboard:
         
         return fig
     
-    def calculate_statistics(self, data: pd.DataFrame, column: str = 'Close') -> Dict:
+    def calculate_statistics(self, data: pd.DataFrame, column: str = None) -> Dict:
         """Calculate basic statistics for a dataset"""
         if data.empty:
             return {}
         
-        if column not in data.columns:
-            column = data.columns[0]
+        # Auto-detect the correct column if not specified
+        if column is None or column not in data.columns:
+            # For stock data, prefer 'Close', otherwise use first column
+            if 'Close' in data.columns:
+                column = 'Close'
+            else:
+                column = data.columns[0]
         
         values = data[column].dropna()
         
@@ -398,11 +403,19 @@ def main():
             data['inflation'] = dashboard.get_data_with_cache(
                 'inflation', dashboard.data_fetcher.generate_mock_inflation_data, period
             )
+            # Debug: Check inflation data
+            if not data['inflation'].empty:
+                st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
+                st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
         
         if show_unemployment:
             data['unemployment'] = dashboard.get_data_with_cache(
                 'unemployment', dashboard.data_fetcher.generate_mock_unemployment_data, period
             )
+            # Debug: Check unemployment data
+            if not data['unemployment'].empty:
+                st.sidebar.write(f"Unemployment data shape: {data['unemployment'].shape}")
+                st.sidebar.write(f"Unemployment columns: {list(data['unemployment'].columns)}")
         
         if show_interest:
             data['interest'] = dashboard.get_data_with_cache(
@@ -423,7 +436,20 @@ def main():
     metrics_data = []
     for key, df in data.items():
         if not df.empty:
-            stats = dashboard.calculate_statistics(df)
+            # Use appropriate column for statistics
+            stats_column = None
+            if 'Close' in df.columns:
+                stats_column = 'Close'
+            elif 'Inflation_Rate' in df.columns:
+                stats_column = 'Inflation_Rate'
+            elif 'Unemployment_Rate' in df.columns:
+                stats_column = 'Unemployment_Rate'
+            elif 'Interest_Rate' in df.columns:
+                stats_column = 'Interest_Rate'
+            elif 'US_Debt_Trillion' in df.columns:
+                stats_column = 'US_Debt_Trillion'
+            
+            stats = dashboard.calculate_statistics(df, stats_column)
             metrics_data.append((key, stats))
     
     for i, (key, stats) in enumerate(metrics_data[:4]):
