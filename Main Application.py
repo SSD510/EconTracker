@@ -264,7 +264,7 @@ class EconomicDashboard:
         if 'oil' in data and not data['oil'].empty:
             fig.add_trace(
                 go.Scatter(x=data['oil'].index, y=data['oil']['Close'], 
-                          name="Oil", line=dict(color='black')),
+                          name="Oil", line=dict(color='aqua')),
                 row=1, col=2
             )
         
@@ -496,7 +496,7 @@ def main():
     chart_configs = [
         ('sp500', "S&P 500 Index", "green", show_sp500),
         ('nasdaq', "NASDAQ Composite", "blue", show_nasdaq),
-        ('oil', "Oil Prices (WTI Crude)", "black", show_oil),
+        ('oil', "Oil Prices (WTI Crude)", "aqua", show_oil),
         ('dollar', "US Dollar Index", "purple", show_dollar),
         ('inflation', "Inflation Rate", "red", show_inflation),
         ('unemployment', "Unemployment Rate", "orange", show_unemployment),
