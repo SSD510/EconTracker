@@ -264,7 +264,7 @@ class EconomicDashboard:
         if 'oil' in data and not data['oil'].empty:
             fig.add_trace(
                 go.Scatter(x=data['oil'].index, y=data['oil']['Close'], 
-                          name="Oil", line=dict(color='aqua')),
+                          name="Oil", line=dict(color='gold')),
                 row=1, col=2
             )
         
@@ -408,8 +408,8 @@ def main():
             )
             # Debug: Check inflation data
             if not data['inflation'].empty:
-                st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
-                st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
+              #  st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
+              #  st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
         
         if show_unemployment:
             data['unemployment'] = dashboard.get_data_with_cache(
@@ -496,7 +496,7 @@ def main():
     chart_configs = [
         ('sp500', "S&P 500 Index", "green", show_sp500),
         ('nasdaq', "NASDAQ Composite", "blue", show_nasdaq),
-        ('oil', "Oil Prices (WTI Crude)", "aqua", show_oil),
+        ('oil', "Oil Prices (WTI Crude)", "gold", show_oil),
         ('dollar', "US Dollar Index", "purple", show_dollar),
         ('inflation', "Inflation Rate", "red", show_inflation),
         ('unemployment', "Unemployment Rate", "orange", show_unemployment),
