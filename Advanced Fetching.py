@@ -12,6 +12,8 @@ from typing import Dict, List, Optional, Tuple
 import logging
 from dataclasses import dataclass
 from fredapi import Fred  # Requires FRED API key
+import os
+os.environ["FRED_API_KEY"] = "a2bf003fd4d27cd9a819a6a8f4ea4ad9"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
