@@ -52,9 +52,15 @@ class EconomicDataFetcher:
         """Fetch US Dollar Index"""
         return self.fetch_stock_data("DX-Y.NYB", period)
     
-    def generate_mock_inflation_data(self) -> pd.DataFrame:
+    def generate_mock_inflation_data(self, period: str = "1y") -> pd.DataFrame:
         """Generate mock inflation data (replace with FRED API)"""
-        dates = pd.date_range(start='2023-01-01', end=datetime.now(), freq='M')
+        # Convert period to number of months for mock data generation
+        period_months = self._period_to_months(period)
+        
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=period_months * 30)
+        dates = pd.date_range(start=start_date, end=end_date, freq='M')
+        
         # Simulate realistic inflation data
         inflation_rates = np.random.normal(3.2, 0.5, len(dates))
         inflation_rates = np.clip(inflation_rates, 0.5, 8.0)
@@ -66,9 +72,14 @@ class EconomicDataFetcher:
         df.set_index('Date', inplace=True)
         return df
     
-    def generate_mock_unemployment_data(self) -> pd.DataFrame:
+    def generate_mock_unemployment_data(self, period: str = "1y") -> pd.DataFrame:
         """Generate mock unemployment data"""
-        dates = pd.date_range(start='2023-01-01', end=datetime.now(), freq='M')
+        period_months = self._period_to_months(period)
+        
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=period_months * 30)
+        dates = pd.date_range(start=start_date, end=end_date, freq='M')
+        
         unemployment_rates = np.random.normal(3.8, 0.3, len(dates))
         unemployment_rates = np.clip(unemployment_rates, 2.5, 10.0)
         
@@ -79,9 +90,14 @@ class EconomicDataFetcher:
         df.set_index('Date', inplace=True)
         return df
     
-    def generate_mock_interest_rate_data(self) -> pd.DataFrame:
+    def generate_mock_interest_rate_data(self, period: str = "1y") -> pd.DataFrame:
         """Generate mock interest rate data"""
-        dates = pd.date_range(start='2023-01-01', end=datetime.now(), freq='M')
+        period_months = self._period_to_months(period)
+        
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=period_months * 30)
+        dates = pd.date_range(start=start_date, end=end_date, freq='M')
+        
         interest_rates = np.random.normal(5.25, 0.2, len(dates))
         interest_rates = np.clip(interest_rates, 0.0, 10.0)
         
@@ -92,9 +108,14 @@ class EconomicDataFetcher:
         df.set_index('Date', inplace=True)
         return df
     
-    def generate_mock_debt_data(self) -> pd.DataFrame:
+    def generate_mock_debt_data(self, period: str = "1y") -> pd.DataFrame:
         """Generate mock US debt data"""
-        dates = pd.date_range(start='2023-01-01', end=datetime.now(), freq='M')
+        period_months = self._period_to_months(period)
+        
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=period_months * 30)
+        dates = pd.date_range(start=start_date, end=end_date, freq='M')
+        
         base_debt = 31.5  # Trillion USD
         debt_values = [base_debt + i * 0.05 for i in range(len(dates))]
         
@@ -104,6 +125,18 @@ class EconomicDataFetcher:
         })
         df.set_index('Date', inplace=True)
         return df
+    
+    def _period_to_months(self, period: str) -> int:
+        """Convert yfinance period string to number of months"""
+        period_map = {
+            "1mo": 1,
+            "3mo": 3,
+            "6mo": 6,
+            "1y": 12,
+            "2y": 24,
+            "5y": 60
+        }
+        return period_map.get(period, 12)  # Default to 12 months
 
 class EconomicDashboard:
     """Main dashboard class"""
