@@ -61,15 +61,23 @@ class EconomicDataFetcher:
         start_date = end_date - timedelta(days=period_months * 30)
         dates = pd.date_range(start=start_date, end=end_date, freq='M')
         
-        # Simulate realistic inflation data
-        inflation_rates = np.random.normal(3.2, 0.5, len(dates))
-        inflation_rates = np.clip(inflation_rates, 0.5, 8.0)
+        # Ensure we have at least some data points
+        if len(dates) == 0:
+            dates = pd.date_range(start=datetime.now() - timedelta(days=365), end=datetime.now(), freq='M')
+        
+        # Simulate realistic inflation data with more variation
+        base_rate = 3.2
+        inflation_rates = []
+        for i, date in enumerate(dates):
+            # Add trend and seasonal variation
+            trend = np.sin(i * 0.3) * 0.8  # Seasonal variation
+            noise = np.random.normal(0, 0.4)  # Random noise
+            rate = base_rate + trend + noise
+            inflation_rates.append(max(0.5, min(8.0, rate)))  # Clip between 0.5 and 8.0
         
         df = pd.DataFrame({
-            'Date': dates,
             'Inflation_Rate': inflation_rates
-        })
-        df.set_index('Date', inplace=True)
+        }, index=dates)
         return df
     
     def generate_mock_unemployment_data(self, period: str = "1y") -> pd.DataFrame:
@@ -80,14 +88,23 @@ class EconomicDataFetcher:
         start_date = end_date - timedelta(days=period_months * 30)
         dates = pd.date_range(start=start_date, end=end_date, freq='M')
         
-        unemployment_rates = np.random.normal(3.8, 0.3, len(dates))
-        unemployment_rates = np.clip(unemployment_rates, 2.5, 10.0)
+        # Ensure we have at least some data points
+        if len(dates) == 0:
+            dates = pd.date_range(start=datetime.now() - timedelta(days=365), end=datetime.now(), freq='M')
+        
+        # Simulate realistic unemployment data with variation
+        base_rate = 3.8
+        unemployment_rates = []
+        for i, date in enumerate(dates):
+            # Add cyclical variation
+            cycle = np.cos(i * 0.2) * 0.5  # Economic cycle variation
+            noise = np.random.normal(0, 0.3)  # Random noise
+            rate = base_rate + cycle + noise
+            unemployment_rates.append(max(2.0, min(10.0, rate)))  # Clip between 2.0 and 10.0
         
         df = pd.DataFrame({
-            'Date': dates,
             'Unemployment_Rate': unemployment_rates
-        })
-        df.set_index('Date', inplace=True)
+        }, index=dates)
         return df
     
     def generate_mock_interest_rate_data(self, period: str = "1y") -> pd.DataFrame:
@@ -98,14 +115,29 @@ class EconomicDataFetcher:
         start_date = end_date - timedelta(days=period_months * 30)
         dates = pd.date_range(start=start_date, end=end_date, freq='M')
         
-        interest_rates = np.random.normal(5.25, 0.2, len(dates))
-        interest_rates = np.clip(interest_rates, 0.0, 10.0)
+        # Ensure we have at least some data points
+        if len(dates) == 0:
+            dates = pd.date_range(start=datetime.now() - timedelta(days=365), end=datetime.now(), freq='M')
+        
+        # Simulate interest rate changes (more realistic stepping pattern)
+        base_rate = 5.25
+        interest_rates = []
+        current_rate = base_rate
+        
+        for i, date in enumerate(dates):
+            # Occasionally adjust rates (simulate Fed meetings)
+            if i % 3 == 0 and np.random.random() < 0.3:  # 30% chance every 3 months
+                adjustment = np.random.choice([-0.25, 0, 0.25], p=[0.3, 0.4, 0.3])
+                current_rate += adjustment
+                current_rate = max(0.0, min(10.0, current_rate))  # Keep within bounds
+            
+            # Add small random variation
+            rate_with_noise = current_rate + np.random.normal(0, 0.05)
+            interest_rates.append(max(0.0, min(10.0, rate_with_noise)))
         
         df = pd.DataFrame({
-            'Date': dates,
             'Interest_Rate': interest_rates
-        })
-        df.set_index('Date', inplace=True)
+        }, index=dates)
         return df
     
     def generate_mock_debt_data(self, period: str = "1y") -> pd.DataFrame:
@@ -116,14 +148,32 @@ class EconomicDataFetcher:
         start_date = end_date - timedelta(days=period_months * 30)
         dates = pd.date_range(start=start_date, end=end_date, freq='M')
         
+        # Ensure we have at least some data points
+        if len(dates) == 0:
+            dates = pd.date_range(start=datetime.now() - timedelta(days=365), end=datetime.now(), freq='M')
+        
+        # Simulate more realistic debt growth (non-linear)
         base_debt = 31.5  # Trillion USD
-        debt_values = [base_debt + i * 0.05 for i in range(len(dates))]
+        debt_values = []
+        
+        for i, date in enumerate(dates):
+            # Non-linear growth with seasonal variations
+            monthly_growth_rate = 0.003 + np.random.normal(0, 0.001)  # ~3.6% annual growth with variation
+            if i == 0:
+                current_debt = base_debt
+            else:
+                current_debt = debt_values[-1] * (1 + monthly_growth_rate)
+            
+            # Add some seasonal/policy-driven variations
+            if i % 6 == 0:  # Every 6 months, add some policy impact
+                policy_impact = np.random.normal(0, 0.2)
+                current_debt += policy_impact
+            
+            debt_values.append(max(30.0, current_debt))  # Ensure debt doesn't go below 30T
         
         df = pd.DataFrame({
-            'Date': dates,
             'US_Debt_Trillion': debt_values
-        })
-        df.set_index('Date', inplace=True)
+        }, index=dates)
         return df
     
     def _period_to_months(self, period: str) -> int:
