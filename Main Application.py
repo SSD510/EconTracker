@@ -268,12 +268,15 @@ class EconomicDashboard:
                 row=1, col=2
             )
         
+        st.write("Inflation data:", data.get('inflation'))
+        st.write("Unemployment data:", data.get('unemployment'))
+
         # Inflation Rate
         if 'inflation' in data and not data['inflation'].empty:
             fig.add_trace(
                 go.Scatter(x=data['inflation'].index, y=data['inflation']['Inflation_Rate'], 
                           name="Inflation", line=dict(color='red')),
-                row=2, col=1
+                row=2, col=2
             )
         
         # Unemployment Rate
