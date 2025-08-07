@@ -1,0 +1,24 @@
+# Core dependencies
+streamlit>=1.28.0
+pandas>=2.0.0
+numpy>=1.24.0
+plotly>=5.15.0
+
+# Data fetching
+yfinance>=0.2.20
+requests>=2.31.0
+
+# Additional utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Optional: For FRED API integration
+fredapi>=0.5.0
+
+# For deployment
+gunicorn>=21.2.0
+
+# Development dependencies (optional)
+pytest>=7.4.0
+black>=23.7.0
+flake8>=6.0.0

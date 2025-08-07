@@ -1,0 +1,72 @@
+# docker-compose.yml - For Docker deployment
+version: '3.8'
+services:
+  economic-dashboard:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - FRED_API_KEY=${FRED_API_KEY}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+
+---
+# Dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8501
+
+HEALTHCHECK CMD curl --fail http://localhost:8501/_stcore/health
+
+CMD ["streamlit", "run", "dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+
+---
+# Procfile - For Heroku deployment
+web: sh setup.sh && streamlit run dashboard.py --server.port=$PORT --server.address=0.0.0.0
+
+---
+# setup.sh - Setup script for Heroku
+#!/bin/bash
+mkdir -p ~/.streamlit/
+echo "\
+[general]\n\
+email = \"your-email@domain.com\"\n\
+" > ~/.streamlit/credentials.toml
+echo "\
+[server]\n\
+headless = true\n\
+enableCORS=false\n\
+port = $PORT\n\
+" > ~/.streamlit/config.toml
+
+---
+# app.yaml - For Google App Engine
+runtime: python39
+
+env_variables:
+  FRED_API_KEY: "your_fred_api_key_here"
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+
+resources:
+  cpu: 1
+  memory_gb: 0.5
+  disk_size_gb: 10
+
+---
+# railway.toml - For Railway deployment
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "streamlit run dashboard.py --server.port=$PORT --server.address=0.0.0.0"
