@@ -408,8 +408,8 @@ def main():
             )
             # Debug: Check inflation data
             if not data['inflation'].empty:
-              #  st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
-              #  st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
+                st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
+                st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
         
         if show_unemployment:
             data['unemployment'] = dashboard.get_data_with_cache(
