@@ -392,7 +392,8 @@ def main():
                 else:
                     value_str = f"{current:.2f}"
                 
-                delta_color = "normal" if abs(change_pct) < 0.01 else None
+                # Use "off" for very small changes, "normal" otherwise
+                delta_color = "off" if abs(change_pct) < 0.01 else "normal"
                 st.metric(
                     label=key.upper().replace('_', ' '),
                     value=value_str,
