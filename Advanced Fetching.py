@@ -11,7 +11,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 import logging
 from dataclasses import dataclass
-from fredapi import Fred(api_key=a2bf003fd4d27cd9a819a6a8f4ea4ad9)
+import os
+from fredapi import Fred
 
 
 # Configure logging
@@ -31,6 +32,9 @@ class AdvancedEconomicDataFetcher:
     """Enhanced data fetcher with multiple sources and error handling"""
     
     def __init__(self, fred_api_key: Optional[str] = None):
+        # Load FRED API key from environment if not provided
+        if fred_api_key is None:
+            fred_api_key = os.environ.get("FRED_API_KEY")
         self.fred_api_key = fred_api_key
         self.fred_client = Fred(api_key=fred_api_key) if fred_api_key else None
         

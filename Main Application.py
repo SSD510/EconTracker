@@ -21,6 +21,57 @@ st.set_page_config(
 )
 
 class EconomicDataFetcher:
+    def set_fred_api_key(self, api_key: str):
+        self.fred_api_key = api_key
+
+    def fetch_fred_series(self, series_id: str, period: str = "1y") -> pd.DataFrame:
+        """Fetch a FRED series as a DataFrame"""
+        if not self.fred_api_key:
+            st.warning("FRED API key not set. Using mock data.")
+            return pd.DataFrame()
+        # Calculate start date
+        period_months = self._period_to_months(period)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=period_months * 30)
+        url = (
+            f"https://api.stlouisfed.org/fred/series/observations?series_id={series_id}"
+            f"&api_key={self.fred_api_key}&file_type=json"
+            f"&observation_start={start_date.strftime('%Y-%m-%d')}"
+            f"&observation_end={end_date.strftime('%Y-%m-%d')}"
+        )
+        try:
+            resp = requests.get(url)
+            resp.raise_for_status()
+            data = resp.json()
+            obs = data.get('observations', [])
+            if not obs:
+                return pd.DataFrame()
+            dates = [pd.to_datetime(o['date']) for o in obs]
+            values = [float(o['value']) if o['value'] not in ('.', None, '') else None for o in obs]
+            df = pd.DataFrame({series_id: values}, index=dates)
+            return df.dropna()
+        except Exception as e:
+            st.error(f"FRED API error for {series_id}: {e}")
+            return pd.DataFrame()
+
+    def fetch_inflation_data(self, period: str = "1y") -> pd.DataFrame:
+        """Fetch US CPI YoY inflation rate from FRED (series: CPIAUCSL YoY)"""
+        # FRED does not provide YoY directly, so fetch CPI and compute YoY
+        cpi_df = self.fetch_fred_series("CPIAUCSL", period)
+        if cpi_df.empty:
+            return pd.DataFrame()
+        cpi = cpi_df["CPIAUCSL"]
+        cpi_yoy = cpi.pct_change(periods=12) * 100
+        df = pd.DataFrame({"Inflation_Rate": cpi_yoy})
+        return df.dropna()
+
+    def fetch_unemployment_data(self, period: str = "1y") -> pd.DataFrame:
+        """Fetch US Unemployment Rate from FRED (series: UNRATE)"""
+        df = self.fetch_fred_series("UNRATE", period)
+        if df.empty:
+            return pd.DataFrame()
+        df = df.rename(columns={"UNRATE": "Unemployment_Rate"})
+        return df
     """Class to handle data fetching from various sources"""
     
     def __init__(self):
@@ -276,7 +327,7 @@ class EconomicDashboard:
             fig.add_trace(
                 go.Scatter(x=data['inflation'].index, y=data['inflation']['Inflation_Rate'], 
                           name="Inflation", line=dict(color='red')),
-                row=2, col=2
+                row=2, col=1
             )
         
         # Unemployment Rate
@@ -372,59 +423,74 @@ def main():
     
     # Load dashboard
     dashboard = load_dashboard()
-    
+
+    # FRED API key input (sidebar)
+    fred_api_key = st.sidebar.text_input("FRED API Key", type="password", value="" if dashboard.data_fetcher.fred_api_key is None else dashboard.data_fetcher.fred_api_key)
+    if fred_api_key:
+        dashboard.data_fetcher.set_fred_api_key(fred_api_key)
+
     # Refresh button
     if st.sidebar.button("🔄 Refresh Data"):
         st.cache_data.clear()
         st.rerun()
-    
+
     # Data loading with progress
     with st.spinner("Loading economic data..."):
         data = {}
-        
+
         if show_sp500:
             data['sp500'] = dashboard.get_data_with_cache(
                 'sp500', dashboard.data_fetcher.fetch_sp500, period
             )
-        
+
         if show_nasdaq:
             data['nasdaq'] = dashboard.get_data_with_cache(
                 'nasdaq', dashboard.data_fetcher.fetch_nasdaq, period
             )
-        
+
         if show_oil:
             data['oil'] = dashboard.get_data_with_cache(
                 'oil', dashboard.data_fetcher.fetch_oil_prices, period
             )
-        
+
         if show_dollar:
             data['dollar'] = dashboard.get_data_with_cache(
                 'dollar', dashboard.data_fetcher.fetch_dollar_index, period
             )
-        
+
         if show_inflation:
-            data['inflation'] = dashboard.get_data_with_cache(
-                'inflation', dashboard.data_fetcher.generate_mock_inflation_data, period
-            )
+            if dashboard.data_fetcher.fred_api_key:
+                data['inflation'] = dashboard.get_data_with_cache(
+                    'inflation', dashboard.data_fetcher.fetch_inflation_data, period
+                )
+            else:
+                data['inflation'] = dashboard.get_data_with_cache(
+                    'inflation', dashboard.data_fetcher.generate_mock_inflation_data, period
+                )
             # Debug: Check inflation data
             if not data['inflation'].empty:
                 st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
                 st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
-        
+
         if show_unemployment:
-            data['unemployment'] = dashboard.get_data_with_cache(
-                'unemployment', dashboard.data_fetcher.generate_mock_unemployment_data, period
-            )
+            if dashboard.data_fetcher.fred_api_key:
+                data['unemployment'] = dashboard.get_data_with_cache(
+                    'unemployment', dashboard.data_fetcher.fetch_unemployment_data, period
+                )
+            else:
+                data['unemployment'] = dashboard.get_data_with_cache(
+                    'unemployment', dashboard.data_fetcher.generate_mock_unemployment_data, period
+                )
             # Debug: Check unemployment data
             if not data['unemployment'].empty:
                 st.sidebar.write(f"Unemployment data shape: {data['unemployment'].shape}")
                 st.sidebar.write(f"Unemployment columns: {list(data['unemployment'].columns)}")
-        
+
         if show_interest:
             data['interest'] = dashboard.get_data_with_cache(
                 'interest', dashboard.data_fetcher.generate_mock_interest_rate_data, period
             )
-        
+
         if show_debt:
             data['debt'] = dashboard.get_data_with_cache(
                 'debt', dashboard.data_fetcher.generate_mock_debt_data, period
