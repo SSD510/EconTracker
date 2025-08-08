@@ -319,8 +319,8 @@ class EconomicDashboard:
                 row=1, col=2
             )
         
-        st.write("Inflation data:", data.get('inflation'))
-        st.write("Unemployment data:", data.get('unemployment'))
+        #st.write("Inflation data:", data.get('inflation'))
+        #st.write("Unemployment data:", data.get('unemployment'))
 
         # Inflation Rate
         if 'inflation' in data and not data['inflation'].empty:
