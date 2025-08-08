@@ -547,9 +547,10 @@ def main():
                 )
     
     # Display overview chart if multiple indicators selected
-    if len(data) >= 4:
+    overview_keys = ['sp500', 'oil', 'inflation', 'unemployment']
+    overview_data = {k: data[k] for k in overview_keys if k in data and not data[k].empty}
+    if len(overview_data) >= 2:  # Show if at least 2 indicators are present
         st.subheader("🔍 Multi-Indicator Overview")
-        overview_data = {k: v for k, v in list(data.items())[:4]}
         overview_fig = dashboard.create_indicator_summary(overview_data)
         st.plotly_chart(overview_fig, use_container_width=True)
     
