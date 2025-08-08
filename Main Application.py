@@ -468,9 +468,9 @@ def main():
                     'inflation', dashboard.data_fetcher.generate_mock_inflation_data, period
                 )
             # Debug: Check inflation data
-            if not data['inflation'].empty:
-                st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
-                st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
+            #if not data['inflation'].empty:
+            #    st.sidebar.write(f"Inflation data shape: {data['inflation'].shape}")
+            #    st.sidebar.write(f"Inflation columns: {list(data['inflation'].columns)}")
 
         if show_unemployment:
             if dashboard.data_fetcher.fred_api_key:
@@ -482,9 +482,9 @@ def main():
                     'unemployment', dashboard.data_fetcher.generate_mock_unemployment_data, period
                 )
             # Debug: Check unemployment data
-            if not data['unemployment'].empty:
-                st.sidebar.write(f"Unemployment data shape: {data['unemployment'].shape}")
-                st.sidebar.write(f"Unemployment columns: {list(data['unemployment'].columns)}")
+            #if not data['unemployment'].empty:
+            #    st.sidebar.write(f"Unemployment data shape: {data['unemployment'].shape}")
+            #    st.sidebar.write(f"Unemployment columns: {list(data['unemployment'].columns)}")
 
         if show_interest:
             data['interest'] = dashboard.get_data_with_cache(
